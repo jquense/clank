@@ -4,10 +4,28 @@ var _ = require('lodash')
 
 module.exports = Clank
 
-function Clank(){
-  var concatedProps = this.concatenatedProperties
+function getClass(){
+  var initProps;
 
+  function Class(){
+    var props = initProps;
+
+    initProps = null
+    _.extend(this, props)
+  }
+
+  Class._initProperties = function(args) { 
+    initProps = args; 
+  };
+
+  return Class
 }
+
+var Clank = getClass()
+
+// Clank.__spec__ = function() {
+
+// }
 
 Clank.extend = function(){
   var len = arguments.length
@@ -25,7 +43,7 @@ Clank.extend = function(){
 
   child = proto && _.has(proto, 'constructor')
         ? proto.constructor
-        : function SurrogateCtor(){ return apply(base, this, arguments) }
+        : function DefaultConstructor(){ return apply(base, this, arguments) }
 
   child.prototype = proto
   child.prototype.constructor = child
@@ -53,7 +71,8 @@ Clank.create = function(){
   for(var i = 0; i < len; ++i) 
     args[i] = arguments[i];
 
-  return new this(args)
+  this._initProperties(args)
+  return new this()
 }
 
 
