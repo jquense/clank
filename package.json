@@ -1,0 +1,35 @@
+{
+  "name": "clank",
+  "version": "1.0.0",
+  "description": "lightweight inhertiance and compositional object model. mostly just helpers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theporchrat/clank.git"
+  },
+  "keywords": [
+    "inherit",
+    "compose",
+    "mixin",
+    "trait",
+    "extend"
+  ],
+  "author": "@theporchrat Jason Quense",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/theporchrat/clank/issues"
+  },
+  "homepage": "https://github.com/theporchrat/clank",
+  "devDependencies": {
+    "sinon-chai": "^2.5.0",
+    "chai": "^1.9.1",
+    "sinon": "^1.10.3",
+    "mocha": "^1.21.4",
+    "gulp-plumber": "^0.6.5",
+    "gulp": "^3.8.7",
+    "gulp-mocha": "^1.0.0"
+  }
+}
