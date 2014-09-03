@@ -18,8 +18,8 @@ var concatFunctionResults = new cobble.Descriptor(function(key, values){
 
 it( 'should set up the prototype chain correctly', function(){
   var Person = Clank.Object.extend({})
-    , Man = Person.extend({})
-    , Jason = Man.extend({});
+    , Man    = Person.extend({})
+    , Jason  = Man.extend({});
 
   var me = new Jason()
 
@@ -95,7 +95,7 @@ it( 'should respect the specified mixin strategy', function(){
   var Person = Clank.Object.extend({ species: 'homo sapian', traits: [ 'biped', 'hair'] });
 
   Person.__spec__ = {
-    traits: cobble.reduce(function(a, b,i, l){
+    traits: cobble.reduce(function(a,b,i, l){
       if (!a ) return b
       return [].concat(a, b)
     })

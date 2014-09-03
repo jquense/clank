@@ -1,6 +1,7 @@
 var _ = require('lodash')
   , cobble = require('cobble')
-  , apply = require('cobble/lib/apply');
+  , meta   = require('./lib/meta')
+  , apply  = require('cobble/lib/apply');
 
 var ClankObject = getClass()
 
@@ -8,14 +9,20 @@ function getClass(){
   var initProps;
 
   function Class(){
-    var props = initProps;
+    var props = initProps || []
+      , defaultMixinStrategy = this.constructor.__spec__ || {};
 
     initProps = null
-    _.extend(this, props)
+
+    cobble.composeInto(this, props, defaultMixinStrategy)
   }
 
   Class._initProperties = function(args) { 
     initProps = args; 
+  };
+
+  Class._setCompositionStrategy = function(args) { 
+    m = meta.get(this, {})
   };
 
   return Class
@@ -23,17 +30,15 @@ function getClass(){
 
 
 ClankObject.extend = function(){
-  var len = arguments.length
-    , args = new Array(len)
-    , base = this
+  var len   = arguments.length
+    , args  = new Array(len)
+    , base  = this
     , proto = Object.create(base.prototype)
     , defaultMixinStrategy = this.__spec__ || {}
     , child; 
 
-  for(var i = 0; i < len; ++i) 
-    args[i] = arguments[i];
+  for(var i = 0; i < len; ++i) args[i] = arguments[i];
 
-  //console.log(proto.traits)
   cobble.composeInto(proto, args, defaultMixinStrategy)
 
   child = proto && _.has(proto, 'constructor')
@@ -42,8 +47,14 @@ ClankObject.extend = function(){
 
   child.prototype = proto
   child.prototype.constructor = child
+
+  meta.set(child, { 
+    __super__: base.prototype
+    superclass: base, 
+  })
+  
   _.extend(child, base);
-  //console.log(defaultMixinStrategy)
+
   return child
 }
 
