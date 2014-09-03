@@ -2,7 +2,7 @@ var _ = require('lodash')
   , cobble = require('cobble')
   , apply = require('cobble/lib/apply');
 
-module.exports = Clank
+var ClankObject = getClass()
 
 function getClass(){
   var initProps;
@@ -21,13 +21,8 @@ function getClass(){
   return Class
 }
 
-var Clank = getClass()
 
-// Clank.__spec__ = function() {
-
-// }
-
-Clank.extend = function(){
+ClankObject.extend = function(){
   var len = arguments.length
     , args = new Array(len)
     , base = this
@@ -52,7 +47,7 @@ Clank.extend = function(){
   return child
 }
 
-Clank.reopen = function(){
+ClankObject.reopen = function(){
   var len = arguments.length
     , args = new Array(len)
     , defaultMixinStrategy = this.__spec__ || {}
@@ -64,7 +59,7 @@ Clank.reopen = function(){
   cobble.composeInto(proto, args, defaultMixinStrategy)
 }
 
-Clank.create = function(){
+ClankObject.create = function(){
   var len = arguments.length
     , args = new Array(len);
 
@@ -73,6 +68,11 @@ Clank.create = function(){
 
   this._initProperties(args)
   return new this()
+}
+
+
+module.exports = {
+  Object: ClankObject
 }
 
 

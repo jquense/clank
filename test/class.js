@@ -17,7 +17,7 @@ var concatFunctionResults = new cobble.Descriptor(function(key, values){
     })
 
 it( 'should set up the prototype chain correctly', function(){
-  var Person = Clank.extend({})
+  var Person = Clank.Object.extend({})
     , Man = Person.extend({})
     , Jason = Man.extend({});
 
@@ -26,11 +26,11 @@ it( 'should set up the prototype chain correctly', function(){
   me.should.be.an.instanceOf(Jason)
     .and.an.instanceOf(Man)
     .and.an.instanceOf(Person)
-    .and.an.instanceOf(Clank)
+    .and.an.instanceOf(Clank.Object)
 })
 
 it( 'should "inherit" properties', function(){
-  var Person = Clank.extend({ species: 'homo sapian'})
+  var Person = Clank.Object.extend({ species: 'homo sapian'})
     , Man = Person.extend({ gender: 'male' })
     , Jason = Man.extend({ name: 'jason'});
 
@@ -42,7 +42,7 @@ it( 'should "inherit" properties', function(){
 })
 
 it( 'should reopen correctly', function(){
-  var Person = Clank.extend({ species: 'homo sapian'})
+  var Person = Clank.Object.extend({ species: 'homo sapian'})
     , Man = Person.extend({ gender: 'male' });
 
   var man = new Man()
@@ -61,7 +61,7 @@ it( 'should reopen correctly', function(){
 
 
 it( 'should handle mixins correctly', function(){
-  var Person = Clank.extend({ species: 'homo sapian', limbs: 4 })
+  var Person = Clank.Object.extend({ species: 'homo sapian', limbs: 4 })
     , docOct = { limbs: 8 }
     , Man = Person.extend(docOct, { gender: 'male' });
 
@@ -71,7 +71,7 @@ it( 'should handle mixins correctly', function(){
 
 
 it( 'should handle mixin conflicts', function(){
-  var Person  = Clank.extend({ greet: function(){ return "hello" } })
+  var Person  = Clank.Object.extend({ greet: function(){ return "hello" } })
     , spanish = { greet: function(){ return "hola" } }
     , german  = { greet: function(){ return "guten morgen" } }
 
@@ -84,16 +84,15 @@ it( 'should handle mixin conflicts', function(){
   man.greet().should.equal("hello and hola and guten morgen")
 
   function functionalConcat(target, next){
-    if (!target ) return next
     return function(){
-        return target() + " and " + next()
-      }
+      return target() + " and " + next()
+    }
   }
 })
 
 
 it( 'should respect the specified mixin strategy', function(){
-  var Person = Clank.extend({ species: 'homo sapian', traits: [ 'biped', 'hair'] });
+  var Person = Clank.Object.extend({ species: 'homo sapian', traits: [ 'biped', 'hair'] });
 
   Person.__spec__ = {
     traits: cobble.reduce(function(a, b,i, l){
