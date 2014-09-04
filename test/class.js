@@ -8,107 +8,162 @@ var chai  = require('chai')
 chai.use(sinonChai);
 chai.should();
 
-var concatFunctionResults = new cobble.Descriptor(function(key, values){
-      return function(){
-        return _.reduce(values, function(str, fn){
-          return str += (str ? ' and ' : '' ) + fn()
-        }, "")
-      }
-    })
 
-it( 'should set up the prototype chain correctly', function(){
-  var Person = Clank.Object.extend({})
-    , Man    = Person.extend({})
-    , Jason  = Man.extend({});
+describe( "when creating objects", function(){
 
-  var me = new Jason()
+  it( 'should initialize with provided init props', function(){
+    var Person = Clank.Object.extend({ greeting: 'guten tag' })
+      , Man    = Person.extend({}); 
 
-  me.should.be.an.instanceOf(Jason)
-    .and.an.instanceOf(Man)
-    .and.an.instanceOf(Person)
-    .and.an.instanceOf(Clank.Object)
-})
+    var me  = Man.create({ greeting: 'hello'})
+      , guy = Man.create()
 
-it( 'should "inherit" properties', function(){
-  var Person = Clank.Object.extend({ species: 'homo sapian'})
-    , Man = Person.extend({ gender: 'male' })
-    , Jason = Man.extend({ name: 'jason'});
+    guy.should.not.have.ownProperty('greeting')
+    guy.should.have.property('greeting').that.equals('guten tag')
 
-  var me = new Jason()
-
-  me.should.have.a.property('name').that.equals('jason')
-  me.should.have.a.property('gender').that.equals('male')
-  me.should.have.a.property('species').that.equals('homo sapian')
-})
-
-it( 'should reopen correctly', function(){
-  var Person = Clank.Object.extend({ species: 'homo sapian'})
-    , Man = Person.extend({ gender: 'male' });
-
-  var man = new Man()
-
-  man.should.have.a.property('gender').that.equals('male')
-  man.should.not.have.a.property('limbs')
-  
-  Man.reopen({
-    limbs: 4,
-    gender: 'irrelevant'
+    me.should.have.ownProperty('greeting')
+      .and.property('greeting').equals('hello')
   })
 
-  man.should.have.a.property('gender').that.equals('irrelevant')
-  man.should.have.a.property('limbs').that.equals(4)
-})
+  it( 'should initialize with provided array of init props', function(){
+    var Person = Clank.Object.extend({ greeting: 'guten tag' })
+      , Man    = Person.extend({}); 
 
+    var me  = Man.create({ greeting: 'hello'}, { greet: function(){ return this.greeting }})
 
-it( 'should handle mixins correctly', function(){
-  var Person = Clank.Object.extend({ species: 'homo sapian', limbs: 4 })
-    , docOct = { limbs: 8 }
-    , Man = Person.extend(docOct, { gender: 'male' });
+    me.should.have.ownProperty('greeting')
+      .and.have.ownProperty('greet')
+      .and.property('greeting').equals('hello')
 
-  var man = new Man()
-  man.should.have.a.property('limbs').that.equals(8)
-})
+      me.greet().should.equal(me.greeting)
+  })
 
+  it( 'should compose init props', function(){
+    var Person = Clank.Object.extend({ greeting: function(){ return 'guten morgen' } })
+      , Man    = Person.extend({}); 
 
-it( 'should handle mixin conflicts', function(){
-  var Person  = Clank.Object.extend({ greet: function(){ return "hello" } })
-    , spanish = { greet: function(){ return "hola" } }
-    , german  = { greet: function(){ return "guten morgen" } }
-
-    , GermanSpanishAmerican = Person.extend(spanish, german, { 
-        greet: cobble.reduce(functionalConcat) 
-      });
-
-  var man = new GermanSpanishAmerican()
-
-  man.greet().should.equal("hello and hola and guten morgen")
-
-  function functionalConcat(target, next){
-    return function(){
-      return target() + " and " + next()
-    }
-  }
-})
-
-
-it( 'should respect the specified mixin strategy', function(){
-  var Person = Clank.Object.extend({ species: 'homo sapian', traits: [ 'biped', 'hair'] });
-
-  Person.__spec__ = {
-    traits: cobble.reduce(function(a,b,i, l){
-      if (!a ) return b
-      return [].concat(a, b)
+    var me  = Man.create(
+        { greeting: function(greeting){ return greeting + ', hello' }}
+      , { greeting: cobble.compose(function(greeting){ return greeting + ' and good Day'})
     })
-  }
 
-  var Hero  = Person.extend({ traits: [ 'brave' ] })
-    , Saint = Hero.extend({ traits: [ 'selfless' ] })
-    , jimmy = new Hero;
+    me.should.have.ownProperty('greeting')
+    me.greeting().should.equal('guten morgen, hello and good Day')
+  })
 
-  jimmy.should.have.a.property('traits')
-    .that.deep.equals([ 'biped', 'hair', 'brave' ])
+  it( 'should compose respect mixin strategy for init props', function(){
+    var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
-  jimmy = new Saint()
-  jimmy.should.have.a.property('traits')
-    .that.deep.equals([ 'biped', 'hair', 'brave', 'selfless' ])
+    Person._setCompositionStrategy({ traits: cobble.concat() })
+
+    var Hero  = Person.extend({})
+      , Saint = Hero.extend({})
+      , jimmy = Hero.create({ traits: [ 'brave' ] });
+
+    jimmy.should.have.a.property('traits')
+      .that.deep.equals([ 'biped', 'hair', 'brave' ])
+
+    jimmy = Saint.create({ traits: [ 'brave', 'selfless' ] })
+    jimmy.should.have.a.property('traits')
+      .that.deep.equals([ 'biped', 'hair', 'brave', 'selfless' ])
+  })
+
+})
+
+describe( "when extending objects", function(){
+
+  it( 'should set up the prototype chain correctly', function(){
+    var Person = Clank.Object.extend({})
+      , Man    = Person.extend({})
+      , Jason  = Man.extend({});
+
+    var me = new Jason()
+
+    me.should.be.an.instanceOf(Jason)
+      .and.an.instanceOf(Man)
+      .and.an.instanceOf(Person)
+      .and.an.instanceOf(Clank.Object)
+  })
+
+  it( 'should "inherit" properties', function(){
+    var Person = Clank.Object.extend({ species: 'homo sapian'})
+      , Man = Person.extend({ gender: 'male' })
+      , Jason = Man.extend({ name: 'jason'});
+
+    var me = new Jason()
+
+    me.should.have.a.property('name').that.equals('jason')
+    me.should.have.a.property('gender').that.equals('male')
+    me.should.have.a.property('species').that.equals('homo sapian')
+  })
+
+  it( 'should reopen correctly', function(){
+    var Person = Clank.Object.extend({ species: 'homo sapian'})
+      , Man = Person.extend({ gender: 'male' });
+
+    var man = new Man()
+
+    man.should.have.a.property('gender').that.equals('male')
+    man.should.not.have.a.property('limbs')
+    
+    Man.reopen({
+      limbs: 4,
+      gender: 'irrelevant'
+    })
+
+    man.should.have.a.property('gender').that.equals('irrelevant')
+    man.should.have.a.property('limbs').that.equals(4)
+  })
+
+
+  it( 'should handle mixins correctly', function(){
+    var Person = Clank.Object.extend({ species: 'homo sapian', limbs: 4 })
+      , docOct = { limbs: 8 }
+      , Man = Person.extend(docOct, { gender: 'male' });
+
+    var man = new Man()
+    man.should.have.a.property('limbs').that.equals(8)
+  })
+
+
+  it( 'should handle mixin conflicts', function(){
+    var Person  = Clank.Object.extend({ greet: function(){ return "hello" } })
+      , spanish = { greet: function(){ return "hola" } }
+      , german  = { greet: function(){ return "guten morgen" } }
+
+      , GermanSpanishAmerican = Person.extend(spanish, german, { 
+          greet: cobble.reduce(functionalConcat) 
+        });
+
+    var man = new GermanSpanishAmerican()
+
+    man.greet().should.equal("hello and hola and guten morgen")
+
+    function functionalConcat(target, next){
+      return function(){
+        return target() + " and " + next()
+      }
+    }
+  })
+
+
+  it( 'should respect the specified mixin strategy', function(){
+    var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
+
+    Person._setCompositionStrategy({
+      traits: cobble.concat()
+    })
+
+    var Hero  = Person.extend({ traits: [ 'brave' ] })
+      , Saint = Hero.extend({ traits: [ 'selfless' ] })
+      , jimmy = new Hero;
+
+    jimmy.should.have.a.property('traits')
+      .that.deep.equals([ 'biped', 'hair', 'brave' ])
+
+    jimmy = new Saint()
+    jimmy.should.have.a.property('traits')
+      .that.deep.equals([ 'biped', 'hair', 'brave', 'selfless' ])
+  })
+
 })

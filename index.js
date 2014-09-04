@@ -10,19 +10,19 @@ function getClass(){
 
   function Class(){
     var props = initProps || []
-      , defaultMixinStrategy = this.constructor.__spec__ || {};
+      , defaultMixinStrategy = meta.get(this.constructor).compositionStrategy || {};
 
     initProps = null
-
-    cobble.composeInto(this, props, defaultMixinStrategy)
+    cobble.into(this, props, defaultMixinStrategy)
   }
 
   Class._initProperties = function(args) { 
     initProps = args; 
   };
 
-  Class._setCompositionStrategy = function(args) { 
-    m = meta.get(this, {})
+  Class._setCompositionStrategy = function(strategy) { 
+    m = meta.get(this)
+    m.compositionStrategy = strategy
   };
 
   return Class
@@ -34,12 +34,12 @@ ClankObject.extend = function(){
     , args  = new Array(len)
     , base  = this
     , proto = Object.create(base.prototype)
-    , defaultMixinStrategy = this.__spec__ || {}
+    , defaultMixinStrategy = meta.get(this).compositionStrategy || {}
     , child; 
 
   for(var i = 0; i < len; ++i) args[i] = arguments[i];
 
-  cobble.composeInto(proto, args, defaultMixinStrategy)
+  cobble.into(proto, args, defaultMixinStrategy)
 
   child = proto && _.has(proto, 'constructor')
         ? proto.constructor
@@ -49,8 +49,9 @@ ClankObject.extend = function(){
   child.prototype.constructor = child
 
   meta.set(child, { 
-    __super__: base.prototype
-    superclass: base, 
+    superclass:    base,
+    superproto:    base.prototype, 
+    compositionStrategy: _.clone(defaultMixinStrategy)
   })
   
   _.extend(child, base);
@@ -61,13 +62,13 @@ ClankObject.extend = function(){
 ClankObject.reopen = function(){
   var len = arguments.length
     , args = new Array(len)
-    , defaultMixinStrategy = this.__spec__ || {}
+    , defaultMixinStrategy = meta.get(this).compositionStrategy || {}
     , proto = this.prototype;
 
   for(var i = 0; i < len; ++i) 
     args[i] = arguments[i];
 
-  cobble.composeInto(proto, args, defaultMixinStrategy)
+  cobble.into(proto, args, defaultMixinStrategy)
 }
 
 ClankObject.create = function(){
