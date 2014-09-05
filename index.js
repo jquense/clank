@@ -56,6 +56,9 @@ ClankObject.extend = function(){
   
   _.extend(child, base);
 
+  child.proto.$super = function(method){
+    return _.bind(base.prototype[method], this)
+  }
   return child
 }
 
@@ -88,6 +91,6 @@ module.exports = {
 }
 
 
-function getMixinStrategy(parent, ctor){
+function injectSuper(parent, ctor){
 
 }
