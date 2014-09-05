@@ -43,8 +43,10 @@ describe( "when creating objects", function(){
       , Man    = Person.extend({}); 
 
     var me  = Man.create(
-        { greeting: function(greeting){ return greeting + ', hello' }}
-      , { greeting: cobble.compose(function(greeting){ return greeting + ' and good Day'})
+        { greeting: function(){ return ', hello' }}
+      , { greeting: cobble.compose(function(greeting){ 
+            return this._super('greeting')() + greeting + ' and good Day'
+          })
     })
 
     me.should.have.ownProperty('greeting')
@@ -54,7 +56,12 @@ describe( "when creating objects", function(){
   it( 'should compose respect mixin strategy for init props', function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
-    Person._setCompositionStrategy({ traits: cobble.concat() })
+    Person._setCompositionStrategy({ 
+      traits: new cobble.Descriptor(function(key, values){
+        var proto = Object.getPrototypeOf(this)
+        return _.flatten([proto[key], values])
+      }) 
+    })
 
     var Hero  = Person.extend({})
       , Saint = Hero.extend({})
@@ -115,6 +122,51 @@ describe( "when extending objects", function(){
     man.should.have.a.property('limbs').that.equals(4)
   })
 
+  it( 'should super', function(){
+    var Person = Clank.Object.extend({ greet: function(prefix){ 
+          return prefix + " and good day" } })
+      , Jason = Person.extend({ greet: function(prefix ){ 
+          return prefix + this._super('greet')(" and hello")
+        }});
+
+    var me = new Jason()
+
+    me.greet('hi').should.equal('hi and hello and good day')
+    me.greet('hi').should.equal('hi and hello and good day')
+  })
+
+  it( 'should super accross multiple depths', function(){
+    var Person = Clank.Object.extend({ greet: function(prefix){ 
+          return prefix + " and good day" } })
+      , Man = Person.extend({ greet: function(prefix){ 
+          return prefix + this._super('greet')(" and excellent weather") } })
+      , Jason = Man.extend({ greet: function(prefix ){ 
+          return prefix + this._super('greet')(" and hello")
+        }});
+
+    var me = new Jason()
+
+    me.greet('hi').should.equal('hi and hello and excellent weather and good day')
+    me.greet('hi').should.equal('hi and hello and excellent weather and good day')
+  })
+
+  it( 'should super when saving a reference', function(){
+    var Person = Clank.Object.extend({ greet: function(prefix){ 
+          return prefix + " and good day" } })
+      , Man = Person.extend({ greet: function(prefix){ 
+            var sup = this._super('greet')
+            return prefix + sup(" and excellent weather") + sup(" repeat:")
+          } 
+        })
+      , Jason = Man.extend({ greet: function(prefix ){ 
+          return prefix + this._super('greet')(" and hello")
+        }});
+
+    var me = new Jason()
+
+    me.greet('hi').should.equal('hi and hello and excellent weather and good day repeat: and good day')
+    me.greet('hi').should.equal('hi and hello and excellent weather and good day repeat: and good day')
+  })
 
   it( 'should handle mixins correctly', function(){
     var Person = Clank.Object.extend({ species: 'homo sapian', limbs: 4 })
@@ -132,16 +184,18 @@ describe( "when extending objects", function(){
       , german  = { greet: function(){ return "guten morgen" } }
 
       , GermanSpanishAmerican = Person.extend(spanish, german, { 
-          greet: cobble.reduce(functionalConcat) 
+          greet: cobble.reduce(functionalConcat, function(){ 
+            return this._super('greet')() 
+          }) 
         });
 
     var man = new GermanSpanishAmerican()
 
     man.greet().should.equal("hello and hola and guten morgen")
 
-    function functionalConcat(target, next){
+    function functionalConcat(target, next) {
       return function(){
-        return target() + " and " + next()
+        return target.call(this) + " and " + next.call(this)
       }
     }
   })
@@ -151,7 +205,10 @@ describe( "when extending objects", function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
     Person._setCompositionStrategy({
-      traits: cobble.concat()
+      traits: new cobble.Descriptor(function(key, values){
+        var proto = Object.getPrototypeOf(this)
+        return _.flatten([proto[key], values])
+      })
     })
 
     var Hero  = Person.extend({ traits: [ 'brave' ] })
