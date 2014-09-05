@@ -135,7 +135,7 @@ describe( "when extending objects", function(){
     me.greet('hi').should.equal('hi and hello and good day')
   })
 
-  it( 'should super accross multiple depths', function(){
+  it( 'should super across multiple depths', function(){
     var Person = Clank.Object.extend({ greet: function(prefix){ 
           return prefix + " and good day" } })
       , Man = Person.extend({ greet: function(prefix){ 
@@ -194,20 +194,17 @@ describe( "when extending objects", function(){
     man.greet().should.equal("hello and hola and guten morgen")
 
     function functionalConcat(target, next) {
-      return function(){
-        return target.call(this) + " and " + next.call(this)
-      }
+      return function(){ return target.call(this) + " and " + next.call(this) }
     }
   })
 
 
   it( 'should respect the specified mixin strategy', function(){
-    var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
+    var Person = Clank.Object.extend({ traits: [ 'biped', 'hair' ] });
 
     Person._setCompositionStrategy({
-      traits: new cobble.Descriptor(function(key, values){
-        var proto = Object.getPrototypeOf(this)
-        return _.flatten([proto[key], values])
+      traits: new cobble.Descriptor(function(key, values){ 
+        return _.flatten([ Object.getPrototypeOf(this)[key], values ])
       })
     })
 
