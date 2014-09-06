@@ -13,7 +13,9 @@ function getClass(){
       , defaultMixinStrategy = meta.get(this.constructor).compositionStrategy || {};
 
     initProps = null
-    cobble.into(this, props, defaultMixinStrategy)
+
+    if ( props && props.length )
+      cobble.into(this, props, defaultMixinStrategy)
   }
 
   Class.prototype._super = function(method) {
@@ -33,8 +35,7 @@ function getClass(){
       ? prop
       : function superMethod(){ 
           var r = prop.apply(currentObj, arguments)
-          if (superchain[superchain.length - 1] === parentObj)
-            superchain.pop();
+          removeInPlace(superchain, parentObj)
           return r
         }
   }
@@ -120,4 +121,10 @@ function findSuper(method, childObj){
     obj = meta.get(obj.constructor).superproto;
   
   return obj;
+}
+
+function removeInPlace(array, item){
+  var idx = array.indexOf(item)
+
+  if ( idx !== -1) array.splice(idx, 1)
 }

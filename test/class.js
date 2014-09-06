@@ -57,10 +57,7 @@ describe( "when creating objects", function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
     Person._setCompositionStrategy({ 
-      traits: new cobble.Descriptor(function(key, values){
-        var proto = Object.getPrototypeOf(this)
-        return _.flatten([proto[key], values])
-      }) 
+      traits: cobble.concat()
     })
 
     var Hero  = Person.extend({})
@@ -122,51 +119,6 @@ describe( "when extending objects", function(){
     man.should.have.a.property('limbs').that.equals(4)
   })
 
-  it( 'should super', function(){
-    var Person = Clank.Object.extend({ greet: function(prefix){ 
-          return prefix + " and good day" } })
-      , Jason = Person.extend({ greet: function(prefix ){ 
-          return prefix + this._super('greet')(" and hello")
-        }});
-
-    var me = new Jason()
-
-    me.greet('hi').should.equal('hi and hello and good day')
-    me.greet('hi').should.equal('hi and hello and good day')
-  })
-
-  it( 'should super accross multiple depths', function(){
-    var Person = Clank.Object.extend({ greet: function(prefix){ 
-          return prefix + " and good day" } })
-      , Man = Person.extend({ greet: function(prefix){ 
-          return prefix + this._super('greet')(" and excellent weather") } })
-      , Jason = Man.extend({ greet: function(prefix ){ 
-          return prefix + this._super('greet')(" and hello")
-        }});
-
-    var me = new Jason()
-
-    me.greet('hi').should.equal('hi and hello and excellent weather and good day')
-    me.greet('hi').should.equal('hi and hello and excellent weather and good day')
-  })
-
-  it( 'should super when saving a reference', function(){
-    var Person = Clank.Object.extend({ greet: function(prefix){ 
-          return prefix + " and good day" } })
-      , Man = Person.extend({ greet: function(prefix){ 
-            var sup = this._super('greet')
-            return prefix + sup(" and excellent weather") + sup(" repeat:")
-          } 
-        })
-      , Jason = Man.extend({ greet: function(prefix ){ 
-          return prefix + this._super('greet')(" and hello")
-        }});
-
-    var me = new Jason()
-
-    me.greet('hi').should.equal('hi and hello and excellent weather and good day repeat: and good day')
-    me.greet('hi').should.equal('hi and hello and excellent weather and good day repeat: and good day')
-  })
 
   it( 'should handle mixins correctly', function(){
     var Person = Clank.Object.extend({ species: 'homo sapian', limbs: 4 })
@@ -184,9 +136,7 @@ describe( "when extending objects", function(){
       , german  = { greet: function(){ return "guten morgen" } }
 
       , GermanSpanishAmerican = Person.extend(spanish, german, { 
-          greet: cobble.reduce(functionalConcat, function(){ 
-            return this._super('greet')() 
-          }) 
+          greet: cobble.reduce(functionalConcat) 
         });
 
     var man = new GermanSpanishAmerican()
@@ -205,22 +155,149 @@ describe( "when extending objects", function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
     Person._setCompositionStrategy({
-      traits: new cobble.Descriptor(function(key, values){
-        var proto = Object.getPrototypeOf(this)
-        return _.flatten([proto[key], values])
-      })
+      traits: cobble.concat()
     })
 
     var Hero  = Person.extend({ traits: [ 'brave' ] })
       , Saint = Hero.extend({ traits: [ 'selfless' ] })
       , jimmy = new Hero;
 
-    jimmy.should.have.a.property('traits')
+    jimmy.should.not.have.ownProperty('traits')
+    jimmy.should.and.have.a.property('traits')
       .that.deep.equals([ 'biped', 'hair', 'brave' ])
 
     jimmy = new Saint()
-    jimmy.should.have.a.property('traits')
+    jimmy.should.not.have.ownProperty('traits')
+    jimmy.should.and.have.a.property('traits')
       .that.deep.equals([ 'biped', 'hair', 'brave', 'selfless' ])
   })
 
+})
+
+describe( 'when using super', function(){
+
+  it( 'should call the parent class method', function(){
+    var Person = Clank.Object.extend({ greet: function(prefix){ 
+          return prefix + " and good day" } })
+      , Jason = Person.extend({ greet: function(prefix ){ 
+          return prefix + this._super('greet')(" and hello")
+        }});
+
+    var me = new Jason()
+
+    me.greet('hi').should.equal('hi and hello and good day')
+    me.greet('hi').should.equal('hi and hello and good day')
+  })
+
+  it( 'should call the parent and grandparent without recursion', function(){
+    var Person = Clank.Object.extend({ greet: function(prefix){ 
+          return prefix + " and good day" } })
+      , Man = Person.extend({ greet: function(prefix){ 
+          return prefix + this._super('greet')(" and excellent weather") } })
+      , Jason = Man.extend({ greet: function(prefix ){ 
+          return prefix + this._super('greet')(" and hello")
+        }});
+
+    var me = new Jason()
+
+    me.greet('hi').should.equal('hi and hello and excellent weather and good day')
+    me.greet('hi').should.equal('hi and hello and excellent weather and good day')
+  })
+
+  it( 'should call down the stack correctly when called twice in a method', function(){
+    var Person = Clank.Object.extend({ greet: function(prefix){ 
+          return prefix + " and good day" } })
+      , Man = Person.extend({ greet: function(prefix){ 
+            var sup = this._super('greet')
+            return prefix + sup(" and excellent weather") + sup(" repeat:")
+          } 
+        })
+      , Jason = Man.extend({ greet: function(prefix ){ 
+          return prefix + this._super('greet')(" and hello")
+        }});
+
+    var me = new Jason()
+
+    me.greet('hi').should.equal('hi and hello and excellent weather and good day repeat: and good day')
+    me.greet('hi').should.equal('hi and hello and excellent weather and good day repeat: and good day')
+  })
+
+  it( 'should work when the method escapes the stack', function(){
+    var Person = Clank.Object.extend({ greet: function(prefix){ 
+          return prefix + " and good day" } })
+      , Man = Person.extend({ greet: function(prefix){ 
+            var sup = this._super('greet')
+            return sup
+          } 
+        })
+      , Jason = Man.extend({ greet: function(prefix ){ 
+          return this._super('greet')
+        }});
+
+    var me = new Jason()
+      , sup = me.greet()
+
+    var val = sup()('hi')
+    val.should.equal('hi and good day')
+  })
+
+  /**
+   * this is a good example of the perils of this approach, async stuff is going to mess up
+   * super's ability to keep track of where it is in the chain, so this is not going to work.
+   * subtle stuff like this is the reason super is underscored 
+   */
+    
+  // it( 'should work in a timeout', function(done){
+    
+  //   var obj = { value: 0 } 
+
+  //   var Human = Clank.Object.extend({ 
+  //         greet: function(prefix, cb){ 
+  //           setTimeout(function(){
+  //             cb(prefix + " Forth")
+  //           }, 0)
+  //         } 
+  //       })
+
+  //   var Person = Human.extend({ 
+  //         greet: function(prefix, cb){ 
+  //           var self = this
+  //             , sup = self._super('greet');
+
+  //           setTimeout(function(){
+  //             sup(prefix + " Third", cb)
+  //           }, 0)
+  //         } 
+  //       })
+
+  //   var Man = Person.extend({ 
+  //         greet: function(prefix, cb){ 
+  //           var self = this
+  //             , sup = self._super('greet');
+
+  //           setTimeout(function(){
+  //             sup(prefix + " Second", cb)
+  //           }, 0)
+  //         } 
+  //       })
+
+  //   var Jason = Man.extend({ 
+  //         greet: function(prefix, cb ){ 
+  //           var self = this
+  //             , sup = self._super('greet');
+
+  //           setTimeout(function(){
+  //             sup(prefix + " First", cb)
+  //           }, 0)
+  //         }
+  //       });
+
+  //   var me = new Jason()
+    
+  //   me.greet("start", function(result){
+  //     //console.log(result)
+  //     result.should.equal('start First Second Third Forth')
+  //     done()
+  //   })
+  // })
 })
