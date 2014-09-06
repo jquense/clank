@@ -16,6 +16,29 @@ function getClass(){
     cobble.into(this, props, defaultMixinStrategy)
   }
 
+  Class.prototype._super = function(method) {
+    var self = this
+      , m    = meta.get(this, { currentSuper: {} })
+      , superchain = m.currentSuper[method] || (m.currentSuper[method] = [])
+      , currentObj = superchain[superchain.length - 1] || this
+      , parentObj  = findSuper(method, currentObj)
+      , prop;
+
+    if (parentObj !== currentObj) //otherwise top of the chain
+      superchain.push(parentObj)
+
+    prop = parentObj[method];
+    
+    return typeof prop !== 'function' 
+      ? prop
+      : function superMethod(){ 
+          var r = prop.apply(currentObj, arguments)
+          if (superchain[superchain.length - 1] === parentObj)
+            superchain.pop();
+          return r
+        }
+  }
+
   Class._initProperties = function(args) { 
     initProps = args; 
   };
@@ -56,9 +79,6 @@ ClankObject.extend = function(){
   
   _.extend(child, base);
 
-  child.proto.$super = function(method){
-    return _.bind(base.prototype[method], this)
-  }
   return child
 }
 
@@ -87,10 +107,17 @@ ClankObject.create = function(){
 
 
 module.exports = {
-  Object: ClankObject
+  Object: ClankObject,
+  cobble: cobble
 }
 
 
-function injectSuper(parent, ctor){
+function findSuper(method, childObj){
+  var obj = childObj;
 
+  //walk down the prototype chain
+  while (obj[method] === childObj[method]) 
+    obj = meta.get(obj.constructor).superproto;
+  
+  return obj;
 }
