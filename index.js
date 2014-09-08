@@ -1,7 +1,9 @@
+"use strict";
 var _ = require('lodash')
   , cobble = require('cobble')
   , meta   = require('./lib/meta')
-  , apply  = require('cobble/lib/apply');
+  , apply  = require('cobble/lib/apply')
+  , _super = require('./lib/super');
 
 var ClankObject = getClass()
 
@@ -18,34 +20,14 @@ function getClass(){
       cobble.into(this, props, defaultMixinStrategy)
   }
 
-  Class.prototype._super = function(method) {
-    var self = this
-      , m    = meta.get(this, { currentSuper: {} })
-      , superchain = m.currentSuper[method] || (m.currentSuper[method] = [])
-      , currentObj = superchain[superchain.length - 1] || this
-      , parentObj  = findSuper(method, currentObj)
-      , prop;
-
-    if (parentObj !== currentObj) //otherwise top of the chain
-      superchain.push(parentObj)
-
-    prop = parentObj[method];
-    
-    return typeof prop !== 'function' 
-      ? prop
-      : function superMethod(){ 
-          var r = prop.apply(currentObj, arguments)
-          removeInPlace(superchain, parentObj)
-          return r
-        }
-  }
+  Class.prototype._super = _super
 
   Class._initProperties = function(args) { 
     initProps = args; 
   };
 
   Class._setCompositionStrategy = function(strategy) { 
-    m = meta.get(this)
+    var m = meta.get(this)
     m.compositionStrategy = strategy
   };
 
@@ -57,8 +39,8 @@ ClankObject.extend = function(){
   var len   = arguments.length
     , args  = new Array(len)
     , base  = this
-    , proto = Object.create(base.prototype)
     , defaultMixinStrategy = meta.get(this).compositionStrategy || {}
+    , proto = Object.create(base.prototype)
     , child; 
 
   for(var i = 0; i < len; ++i) args[i] = arguments[i];
@@ -68,6 +50,11 @@ ClankObject.extend = function(){
   child = proto && _.has(proto, 'constructor')
         ? proto.constructor
         : function DefaultConstructor(){ return apply(base, this, arguments) }
+
+  _.each(proto, function(value, name) {
+    if ( typeof value === 'function') 
+      value._methodName = name;
+  });
 
   child.prototype = proto
   child.prototype.constructor = child
@@ -113,14 +100,17 @@ module.exports = {
 }
 
 
-function findSuper(method, childObj){
-  var obj = childObj;
+function findSuper(method, current, impl){
+  var foundImpl = current[method] === impl
+    , proto = current
 
-  //walk down the prototype chain
-  while (obj[method] === childObj[method]) 
-    obj = meta.get(obj.constructor).superproto;
-  
-  return obj;
+  while (proto = Object.getPrototypeOf(proto)) {
+    if (!proto[method]) break
+    else if (foundImpl) return proto[method]
+    else if (proto[method] === impl) foundImpl = true; 
+  }
+
+  if ( !foundImpl ) throw new Error("`super` may not be called outside a method implementation");
 }
 
 function removeInPlace(array, item){

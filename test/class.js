@@ -186,7 +186,6 @@ describe( 'when using super', function(){
     var me = new Jason()
 
     me.greet('hi').should.equal('hi and hello and good day')
-    me.greet('hi').should.equal('hi and hello and good day')
   })
 
   it( 'should call the parent and grandparent without recursion', function(){
@@ -201,7 +200,22 @@ describe( 'when using super', function(){
     var me = new Jason()
 
     me.greet('hi').should.equal('hi and hello and excellent weather and good day')
-    me.greet('hi').should.equal('hi and hello and excellent weather and good day')
+  })
+
+  it( 'should call down the stack correctly when skipping a generation', function(){
+    var Person = Clank.Object.extend({ 
+          greet: function(prefix){ 
+            return prefix + " and good day" 
+          }   
+        })
+      , Man   = Person.extend({})
+      , Jason = Man.extend({ greet: function(prefix ){ 
+          return prefix + this._super('greet')(" and hello")
+        }});
+
+    var me = new Jason()
+
+    me.greet('hi').should.equal('hi and hello and good day')
   })
 
   it( 'should call down the stack correctly when called twice in a method', function(){
@@ -219,7 +233,7 @@ describe( 'when using super', function(){
     var me = new Jason()
 
     me.greet('hi').should.equal('hi and hello and excellent weather and good day repeat: and good day')
-    me.greet('hi').should.equal('hi and hello and excellent weather and good day repeat: and good day')
+   
   })
 
   it( 'should work when the method escapes the stack', function(){
@@ -241,63 +255,113 @@ describe( 'when using super', function(){
     val.should.equal('hi and good day')
   })
 
+  it( 'should work when calls are nested', function(){
+    var Person = Clank.Object.extend({ 
+          greet: function(prefix){ 
+            return prefix + " 3" 
+          } 
+        })
+      , Man = Person.extend(
+        cobble({
+          greet: function(prefix ){ 
+            return prefix + " 2a"
+          }
+        },
+        { 
+          greet: cobble.compose(function(prefix ){ 
+            return this._super('greet')(prefix + " 2b")
+          })
+        }))
+      , Jason = Man.extend({ 
+          greet: function(prefix ){ 
+            return this._super('greet')(prefix + " 1")
+          }
+        });
+
+    var me = new Jason()
+
+    me.greet('start:').should.equal('start: 1 2a 2b 3')
+
+
+  })
+
+  it( 'should throw when called outside a method', function(){
+    var Person = Clank.Object.extend({ 
+          greet: function(prefix){ 
+            return prefix + " and good day" 
+          } 
+        })
+      , Jason = Person.extend({ 
+          greet: function(prefix ){ 
+            return prefix + this._super('greet')(" and hello")
+          }
+        });
+
+    var me = new Jason()
+
+    th.should.throw(Error, "`super` may not be called outside a method implementation")
+
+    function th(){
+      me._super('greet')('hello')
+    }
+  })
+
   /**
    * this is a good example of the perils of this approach, async stuff is going to mess up
-   * super's ability to keep track of where it is in the chain, so this is not going to work.
+   * super's ability to keep track of where it is in the chain, so the super must be gotten outside the timeout.
    * subtle stuff like this is the reason super is underscored 
-   */
+   */   
+  it( 'should sort of work in a timeout', function(done){
     
-  // it( 'should work in a timeout', function(done){
+    var obj = { value: 0 } 
+
+    var Human = Clank.Object.extend({ 
+          greet: function(prefix, cb){ 
+            setTimeout(function(){
+              cb(prefix + " Forth")
+            }, 0)
+          } 
+        })
+
+    var Person = Human.extend({ 
+          greet: function(prefix, cb){ 
+            var self = this
+              , sup = self._super('greet');
+
+            setTimeout(function(){
+              sup(prefix + " Third", cb)
+            }, 0)
+          } 
+        })
+
+    var Man = Person.extend({ 
+          greet: function(prefix, cb){ 
+            var self = this
+              , sup = self._super('greet');
+
+            setTimeout(function(){
+              sup(prefix + " Second", cb)
+            }, 0)
+          } 
+        })
+
+    var Jason = Man.extend({ 
+          greet: function(prefix, cb ){ 
+            var self = this
+              , sup = self._super('greet');
+
+            setTimeout(function(){
+              sup(prefix + " First", cb)
+            }, 0)
+          }
+        });
+
+    var me = new Jason()
     
-  //   var obj = { value: 0 } 
-
-  //   var Human = Clank.Object.extend({ 
-  //         greet: function(prefix, cb){ 
-  //           setTimeout(function(){
-  //             cb(prefix + " Forth")
-  //           }, 0)
-  //         } 
-  //       })
-
-  //   var Person = Human.extend({ 
-  //         greet: function(prefix, cb){ 
-  //           var self = this
-  //             , sup = self._super('greet');
-
-  //           setTimeout(function(){
-  //             sup(prefix + " Third", cb)
-  //           }, 0)
-  //         } 
-  //       })
-
-  //   var Man = Person.extend({ 
-  //         greet: function(prefix, cb){ 
-  //           var self = this
-  //             , sup = self._super('greet');
-
-  //           setTimeout(function(){
-  //             sup(prefix + " Second", cb)
-  //           }, 0)
-  //         } 
-  //       })
-
-  //   var Jason = Man.extend({ 
-  //         greet: function(prefix, cb ){ 
-  //           var self = this
-  //             , sup = self._super('greet');
-
-  //           setTimeout(function(){
-  //             sup(prefix + " First", cb)
-  //           }, 0)
-  //         }
-  //       });
-
-  //   var me = new Jason()
-    
-  //   me.greet("start", function(result){
-  //     //console.log(result)
-  //     result.should.equal('start First Second Third Forth')
-  //     done()
-  //   })
-  // })
+    me.greet("start", function(result){
+      //console.log(result)
+      result.should.equal('start First Second Third Forth')
+      done()
+    })
+  })
 })
