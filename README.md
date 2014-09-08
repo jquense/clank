@@ -1,17 +1,25 @@
 Clank
 ========
 
-A simple prototypal inheritance abstraction with an emphasis on composition. Barely more then a few helpers, built on top of [cobble](https://github.com/theporchrat/cobble/) for trait-like mixins. If you used Backbone or Ember this API should feel familiar.
+A simple prototypal inheritance abstraction with an emphasis on composition. Clank is a _thin_ wrapper around [cobble](https://github.com/theporchrat/cobble/). If you used Backbone or Ember this API should feel familiar, there is no magic here, just a few wrappers around the normal prototypal inheritance you are used to.
+
+It is _highly_ recommended that you take a look at the tests (`./test/class.js`) for a far more extensive demostration of the functionality of Clank.
+
+## Support
+
+works fine in IE8 but does expect certain es5 functions, include es5 shim and sham in an IE8 and everything will work fine, with a single caveat, object constructors are assigned a non-enumerable property `__META__`, which in IE8 _is_ enumerable, so keep that in mind.
 
 ## API
 
 require the module; 
 
-  var Clank = require('clank')
+    var Clank = require('clank')
 
-Clank comes with a single `Clank.Object` class that provides a starting base class for any objects you want.
+The Clank object [is just the cobble function](https://github.com/theporchrat/cobble/#cobbleobjects) with a single new property `.Object` which is your base object.
 
-### Clank.Object.extend(...spec)
+## Clank.Object
+
+### .extend(...spec)
 
 Every Constructor returned from `.extend()` also has an extend method.
 
@@ -48,7 +56,7 @@ you can also you compositional descriptors to handle overrides and super calls. 
 
     person.greet() // => "hello and hola and guten morgen"
 
-### AnyClass.reopen(...spec)
+### .reopen(...spec)
 
 `.reopen` is like extend but `.extend` of creating a new Class it alters the current class prototype. Changes made to the prototype will cascade throguh the object heirarchy. `.reopen` has the same signature as `.extend`.
 
@@ -69,9 +77,9 @@ you can also you compositional descriptors to handle overrides and super calls. 
     man.limbs  // => 4
 
 
-### AnyClass.create(...properties)
+### .create(...properties)
 
-Returns an instance of the object with instance properties set to the passed in object, or array of objects
+Returns an instance of the object with instance properties set to the passed in object, or array of objects. `.create` also has teh same signature as `.extend()` so you can use descriptors as well to compose properties.
 
     var Person = Clank.Object.extend({ greeting: 'guten tag' }); 
 
@@ -87,6 +95,25 @@ Returns an instance of the object with instance properties set to the passed in 
 
 ## Super Calls
 
-Clank _does_ have a `super` implementation but you probably don't need it. The majority of super use cases, can be solved by simple doing `Parent.prototype[method].call(this, [args]` in cases where this is possible it is the recommended way to do it. 
+By default the descriptors, such as `before()` and `after()`, include super methods and properties, so they are composed together along with any mixins.
+
+    var Person = Clank.Object.extend({ 
+          greet: function(name){
+            return "hello"  + " " + name
+          }
+        }) 
+
+    var Pirate = Person.extend({ 
+          greet: Clank.compose(function(greeting){
+            return  "ARRRRRRG and " + greeting 
+          })
+        })
+
+    var blackBeard = new Pirate()
+
+    blackBeard.greet('Steven') // => "ARRRRRRG and hello Steven"
+
+
+Clank _does_ have a "proper" `super` implementation but you probably don't need it. The majority of super use-cases, can be solved by simple doing `Parent.prototype[method].call(this, [args]` or using the descriptors. For a bunch of reasons, using `_super` is going to be less preformant then a static reference (either method). __Note: super also makes use of `Function.caller`, a depreciated lang feature, internally.__
 
 In a few cases where you need to dynamically reference the super class, super han be accessed by `this._super([method]) => returns the method` inside a class method, however, there are a bunch of pitfalls and caveats related to its use, which is why it is __underscored__. Consult the super tests for insight into the limitations of this method.
