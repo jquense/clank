@@ -7,7 +7,7 @@ It is _highly_ recommended that you take a look at the tests (`./test/class.js`)
 
 ## Support
 
-works fine in IE8 but does expect certain es5 functions, include es5 shim and sham in an IE8 and everything will work fine, with a single caveat, object constructors are assigned a non-enumerable property `__META__`, which in IE8 _is_ enumerable, so keep that in mind.
+works fine in IE8 but does expect certain es5 functions, include es5 shim and sham in IE8 and everything will work fine, with a single caveat: object constructors are assigned a non-enumerable property `__META__`, which in IE8 _is_ enumerable, so keep that in mind.
 
 ## API
 
@@ -58,7 +58,7 @@ you can also you compositional descriptors to handle overrides and super calls. 
 
 ### .reopen(...spec)
 
-`.reopen` is like extend but `.extend` of creating a new Class it alters the current class prototype. Changes made to the prototype will cascade throguh the object heirarchy. `.reopen` has the same signature as `.extend`.
+`.reopen` is like `.extend` but instead of creating a new Class it alters the current class prototype. Changes made to the prototype will cascade throguh the object heirarchy. `.reopen` has the same signature as `.extend`.
 
     var Person = Clank.Object.extend({ species: 'homo sapien'})
       , Man    = Person.extend({ gender: 'male' });
