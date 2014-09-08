@@ -92,6 +92,24 @@ Returns an instance of the object with instance properties set to the passed in 
     friend.hasOwnProperty('greeting') // => false
     friend.greeting                   // => 'guten tag'
 
+### Default Object Composition
+
+In certain cases you may want to create an object Class with a default composition behaviour when extending or creating instances. Clank provides the `Constructor.setCompositionStrategy(spec)` method for doing just this. The provided `spec` should be an object that will be mixed into the instance or extension after all user provided compositions.
+
+    var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
+
+    //in the future traits will be concated together
+    Person.setCompositionStrategy({
+      traits: Clank.concat()
+    })
+
+    var Hero  = Person.extend({ traits: [ 'brave' ] }) //no need to manually resolve this conflict
+    
+    var  jimmy = new Hero;
+
+    jimmy.traits // => [ 'biped', 'hair', 'brave' ]
+
+This can be very helpful for creating some default behaviour in an often used object, but beware, a user can still provide their own compositions, that run _before_ the default strategy. If the user is unaware of the default strategy this can introduce subtle bugs when they try and duplicate a behaviour.
 
 ## Super Calls
 

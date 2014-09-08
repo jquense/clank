@@ -55,7 +55,7 @@ describe( "when creating objects", function(){
   it( 'should compose respect mixin strategy for init props', function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
-    Person._setCompositionStrategy({ 
+    Person.setCompositionStrategy({ 
       traits: Clank.concat()
     })
 
@@ -153,7 +153,7 @@ describe( "when extending objects", function(){
   it( 'should respect the specified mixin strategy', function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
-    Person._setCompositionStrategy({
+    Person.setCompositionStrategy({
       traits: Clank.concat()
     })
 

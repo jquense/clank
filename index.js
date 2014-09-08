@@ -26,7 +26,7 @@ function getClass(){
     initProps = args; 
   };
 
-  Class._setCompositionStrategy = function(strategy) { 
+  Class.setCompositionStrategy = function(strategy) { 
     meta.get(this).compositionStrategy = strategy
   };
 
