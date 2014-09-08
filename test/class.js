@@ -1,7 +1,6 @@
 var chai  = require('chai')
   , sinon = require("sinon")
   , sinonChai = require("sinon-chai")
-  , cobble = require('cobble')
   , _      = require('lodash')
   , Clank = require('../index');
 
@@ -44,7 +43,7 @@ describe( "when creating objects", function(){
 
     var me  = Man.create(
         { greeting: function(){ return ', hello' }}
-      , { greeting: cobble.compose(function(greeting){ 
+      , { greeting: Clank.compose(function(greeting){ 
             return this._super('greeting')() + greeting + ' and good Day'
           })
     })
@@ -57,7 +56,7 @@ describe( "when creating objects", function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
     Person._setCompositionStrategy({ 
-      traits: cobble.concat()
+      traits: Clank.concat()
     })
 
     var Hero  = Person.extend({})
@@ -136,7 +135,7 @@ describe( "when extending objects", function(){
       , german  = { greet: function(){ return "guten morgen" } }
 
       , GermanSpanishAmerican = Person.extend(spanish, german, { 
-          greet: cobble.reduce(functionalConcat) 
+          greet: Clank.reduce(functionalConcat) 
         });
 
     var man = new GermanSpanishAmerican()
@@ -155,7 +154,7 @@ describe( "when extending objects", function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
     Person._setCompositionStrategy({
-      traits: cobble.concat()
+      traits: Clank.concat()
     })
 
     var Hero  = Person.extend({ traits: [ 'brave' ] })
@@ -262,13 +261,13 @@ describe( 'when using super', function(){
           } 
         })
       , Man = Person.extend(
-        cobble({
+        Clank({
           greet: function(prefix ){ 
             return prefix + " 2a"
           }
         },
         { 
-          greet: cobble.compose(function(prefix ){ 
+          greet: Clank.compose(function(prefix ){ 
             return this._super('greet')(prefix + " 2b")
           })
         }))

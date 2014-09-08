@@ -27,8 +27,7 @@ function getClass(){
   };
 
   Class._setCompositionStrategy = function(strategy) { 
-    var m = meta.get(this)
-    m.compositionStrategy = strategy
+    meta.get(this).compositionStrategy = strategy
   };
 
   return Class
@@ -51,17 +50,11 @@ ClankObject.extend = function(){
         ? proto.constructor
         : function DefaultConstructor(){ return apply(base, this, arguments) }
 
-  _.each(proto, function(value, name) {
-    if ( typeof value === 'function') 
-      value._methodName = name;
-  });
-
   child.prototype = proto
   child.prototype.constructor = child
 
   meta.set(child, { 
     superclass:    base,
-    superproto:    base.prototype, 
     compositionStrategy: _.clone(defaultMixinStrategy)
   })
   
@@ -76,14 +69,13 @@ ClankObject.reopen = function(){
     , defaultMixinStrategy = meta.get(this).compositionStrategy || {}
     , proto = this.prototype;
 
-  for(var i = 0; i < len; ++i) 
-    args[i] = arguments[i];
+  for(var i = 0; i < len; ++i) args[i] = arguments[i];
 
   cobble.into(proto, args, defaultMixinStrategy)
 }
 
 ClankObject.create = function(){
-  var len = arguments.length
+  var len  = arguments.length
     , args = new Array(len);
 
   for(var i = 0; i < len; ++i) 
@@ -93,28 +85,11 @@ ClankObject.create = function(){
   return new this()
 }
 
+cobble.Object = ClankObject
 
-module.exports = {
-  Object: ClankObject,
-  cobble: cobble
-}
-
-
-function findSuper(method, current, impl){
-  var foundImpl = current[method] === impl
-    , proto = current
-
-  while (proto = Object.getPrototypeOf(proto)) {
-    if (!proto[method]) break
-    else if (foundImpl) return proto[method]
-    else if (proto[method] === impl) foundImpl = true; 
-  }
-
-  if ( !foundImpl ) throw new Error("`super` may not be called outside a method implementation");
-}
+module.exports = cobble
 
 function removeInPlace(array, item){
   var idx = array.indexOf(item)
-
   if ( idx !== -1) array.splice(idx, 1)
 }
