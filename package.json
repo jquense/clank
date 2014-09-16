@@ -1,6 +1,6 @@
 {
   "name": "clank",
-  "version": "0.12.0",
+  "version": "0.12.2",
   "description": "lightweight inhertiance and compositional object model. mostly just helpers",
   "main": "index.js",
   "scripts": {
@@ -34,6 +34,6 @@
   },
   "dependencies": {
     "lodash": "~2.4.1",
-    "cobble": "~0.16.1"
+    "cobble": "~0.16.3"
   }
 }

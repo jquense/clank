@@ -37,6 +37,19 @@ describe( "when creating objects", function(){
       me.greet().should.equal(me.greeting)
   })
 
+  it( 'should be able to provide a constructor', function(){
+    var spy
+      , Person = Clank.Object.extend({ greeting: 'guten tag' })
+      , Man = Person.extend({ 
+          constructor: spy = sinon.spy(function(){
+            Person.call(this)
+          })
+        }); 
+
+    var me  = Man.create()
+    spy.should.have.been.calledOnce
+  })
+
   it( 'should compose init props', function(){
     var Person = Clank.Object.extend({ greeting: function(){ return 'guten morgen' } })
       , Man    = Person.extend({}); 
