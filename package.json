@@ -1,7 +1,7 @@
 {
   "name": "clank",
-  "version": "0.12.2",
-  "description": "lightweight inhertiance and compositional object model. mostly just helpers",
+  "version": "1.0.0",
+  "description": "lightweight inheritance and compositional object model; mostly just helpers",
   "main": "index.js",
   "scripts": {
     "test": "mocha -R spec ./test/*.js"
@@ -33,7 +33,7 @@
     "gulp-mocha": "^1.0.0"
   },
   "dependencies": {
-    "lodash": "~2.4.1",
-    "cobble": "~0.16.3"
+    "lodash": "^2.4.1",
+    "cobble": "^1.0.0"
   }
 }
