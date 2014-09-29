@@ -9,10 +9,6 @@ It is _highly_ recommended that you take a look at the [tests (`./test/class.js`
 
 Works fine in IE8 but does expect certain es5 functions, include es5 shim and sham in IE8 and everything will work fine, with a single caveat: object constructors are assigned a non-enumerable property `__META__`, which in IE8 _is_ enumerable, so keep that in mind, when using `Object.assign` and other "extend" functions.
 
-## 2.0.0 Breaking changes
-
-- instantiating an object will throw a `TypeError` if there are still unresolved required properties
-
 ## API
 
 require the module; 

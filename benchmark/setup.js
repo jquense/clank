@@ -17,7 +17,8 @@ module.exports = {
   onSuiteComplete: onSuiteComplete
 }
 
-function onSuiteComplete(suites){
+//thanks lodash https://github.com/lodash/lodash/blob/master/perf/perf.js
+function onSuiteComplete(suites, current, old){
   var score = { 'a': [], 'b': [] }
 
   return function(){
@@ -50,13 +51,15 @@ function onSuiteComplete(suites){
       else {
         var percent = ((fastestHz / slowestHz) - 1) * 100;
 
+        
+        console.log('\t' + slowest[0].name + ': ' + Benchmark.formatNumber(Math.round(slowestHz)) + ' per/s')
+        console.log('\t' + fastest[0].name + ': ' + Benchmark.formatNumber(Math.round(fastestHz)) + ' per/s')
+        console.log('\t--------------------------')
         console.log('\t' + 
           fastest[0].name + ' is ' +
           Benchmark.formatNumber(percent < 1 ? percent.toFixed(2) : Math.round(percent)) +
           '% faster.'
         );
-        console.log('\t' + slowest[0].name + ': ' + slowestHz + ' per/s')
-        console.log('\t' + fastest[0].name + ': ' + fastestHz + ' per/s')
       }
       // add score adjusted for margin of error
       score.a.push(aHz);
@@ -68,21 +71,21 @@ function onSuiteComplete(suites){
     if (suites.length) 
       suites[0].run({ 'async': true});
     
-    // else {
-    //   var aMeanHz = getGeometricMean(score.a),
-    //       bMeanHz = getGeometricMean(score.b),
-    //       fastestMeanHz = Math.max(aMeanHz, bMeanHz),
-    //       slowestMeanHz = Math.min(aMeanHz, bMeanHz),
-    //       xFaster = fastestMeanHz / slowestMeanHz,
-    //       percentFaster = Benchmark.formatNumber(Math.round((xFaster - 1) * 100)),
-    //       message = 'is ' + percentFaster + '% ' + (xFaster == 1 ? '' : '(' + Benchmark.formatNumber(xFaster.toFixed(2)) + 'x) ') + 'faster than';
+    else {
+      var aMeanHz = getGeometricMean(score.a),
+          bMeanHz = getGeometricMean(score.b),
+          fastestMeanHz = Math.max(aMeanHz, bMeanHz),
+          slowestMeanHz = Math.min(aMeanHz, bMeanHz),
+          xFaster = fastestMeanHz / slowestMeanHz,
+          percentFaster = Benchmark.formatNumber(Math.round((xFaster - 1) * 100)),
+          message = 'is ' + percentFaster + '% ' + (xFaster == 1 ? '' : '(' + Benchmark.formatNumber(xFaster.toFixed(2)) + 'x) ') + 'faster than';
 
-    //   // report results
-    //   if (aMeanHz >= bMeanHz)
-    //     console.log('\n' + 'buildName' + ' ' + message + ' ' + 'otherName' + '.');
-    //   else 
-    //     console.log('\n' + 'otherName' + ' ' + message + ' ' + 'buildName' + '.');
-    // }
+      // report results
+      if (aMeanHz >= bMeanHz)
+        console.log('\n' + current + ' ' + message + ' ' + old + '.');
+      else 
+        console.log('\n' + old + ' ' + message + ' ' + current + '.');
+    }
   }
 }
   

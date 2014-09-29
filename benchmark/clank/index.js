@@ -12,14 +12,12 @@ function getClass(){
 
   function Class(){
     var props = initProps || []
-      , defaultMixinStrategy = (this.__meta__ && this.__meta__.compositionStrategy) || {};
+      , defaultMixinStrategy = meta.get(this.constructor).compositionStrategy || {};
 
     initProps = null
 
-    if ( props && props.length ) {
+    if ( props && props.length )
       cobble.into(this, props, defaultMixinStrategy)
-      cobble.assert(this)
-    }
   }
 
   Class.prototype._super = _super
@@ -40,12 +38,11 @@ ClankObject.extend = function(){
   var len   = arguments.length
     , args  = new Array(len)
     , base  = this
-    , proto = Object.create(base.prototype)
     , defaultMixinStrategy = meta.get(this).compositionStrategy || {}
+    , proto = Object.create(base.prototype)
     , child; 
 
-  for(var i = 0; i < len; ++i) 
-    args[i] = arguments[i];
+  for(var i = 0; i < len; ++i) args[i] = arguments[i];
 
   cobble.into(proto, args, defaultMixinStrategy)
 
@@ -58,7 +55,7 @@ ClankObject.extend = function(){
 
   meta.set(child, { 
     superclass:    base,
-    compositionStrategy: defaultMixinStrategy
+    compositionStrategy: _.clone(defaultMixinStrategy)
   })
   
   _.extend(child, base);
@@ -69,12 +66,12 @@ ClankObject.extend = function(){
 ClankObject.reopen = function(){
   var len = arguments.length
     , args = new Array(len)
-    , defaultMixinStrategy = meta.get(this).compositionStrategy || {};
+    , defaultMixinStrategy = meta.get(this).compositionStrategy || {}
+    , proto = this.prototype;
 
-  for(var i = 0; i < len; ++i) 
-    args[i] = arguments[i];
+  for(var i = 0; i < len; ++i) args[i] = arguments[i];
 
-  cobble.into(this.prototype, args, defaultMixinStrategy)
+  cobble.into(proto, args, defaultMixinStrategy)
 }
 
 ClankObject.create = function(){
@@ -85,7 +82,7 @@ ClankObject.create = function(){
     args[i] = arguments[i];
 
   this._initProperties(args)
-  return new this
+  return new this()
 }
 
 cobble.Object = ClankObject
