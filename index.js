@@ -12,7 +12,7 @@ function getClass(){
 
   function Class(){
     var props = initProps || []
-      , defaultMixinStrategy = (this.__meta__ && this.__meta__.compositionStrategy) || {};
+      , defaultMixinStrategy = meta.get(this.constructor).compositionStrategy || {};
 
     initProps = null
 
