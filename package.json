@@ -24,16 +24,18 @@
   },
   "homepage": "https://github.com/theporchrat/clank",
   "devDependencies": {
-    "sinon-chai": "^2.5.0",
+    "backbone": "^1.1.2",
+    "benchmark": "^1.0.0",
     "chai": "^1.9.1",
-    "sinon": "^1.10.3",
-    "mocha": "^1.21.4",
-    "gulp-plumber": "^0.6.5",
     "gulp": "^3.8.7",
-    "gulp-mocha": "^1.0.0"
+    "gulp-mocha": "^1.0.0",
+    "gulp-plumber": "^0.6.5",
+    "mocha": "^1.21.4",
+    "sinon": "^1.10.3",
+    "sinon-chai": "^2.5.0"
   },
   "dependencies": {
-    "lodash": "^2.4.1",
-    "cobble": "^1.0.0"
+    "cobble": "^1.1.1",
+    "lodash": "^2.4.1"
   }
 }

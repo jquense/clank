@@ -37,6 +37,19 @@ describe( "when creating objects", function(){
       me.greet().should.equal(me.greeting)
   })
 
+  it( 'should throw when there are unmet required properties', function(){
+    var Person = Clank.Object.extend({ greeting: Clank.required })
+      , Man    = Person.extend({}); 
+
+    Man.reopen({ another: 'hello' })
+
+    ;(function(){ 
+      Man.create({ greeting: 'hello' }) }).should.not.throw()
+
+    ;(function(){ 
+      Man.create({ salutation: 'hello' }) }).should.throw(TypeError, 'Unmet required properties: greeting')
+  })
+
   it( 'should be able to provide a constructor', function(){
     var spy
       , Person = Clank.Object.extend({ greeting: 'guten tag' })

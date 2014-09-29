@@ -18,6 +18,8 @@ function getClass(){
 
     if ( props && props.length )
       cobble.into(this, props, defaultMixinStrategy)
+
+    cobble.assert(this)
   }
 
   Class.prototype._super = _super
@@ -38,7 +40,7 @@ ClankObject.extend = function(){
   var len   = arguments.length
     , args  = new Array(len)
     , base  = this
-    , defaultMixinStrategy = meta.get(this).compositionStrategy || {}
+    , defaultMixinStrategy = (this.__meta__ && this.__meta__.compositionStrategy) || {}
     , proto = Object.create(base.prototype)
     , child; 
 
@@ -55,7 +57,7 @@ ClankObject.extend = function(){
 
   meta.set(child, { 
     superclass:    base,
-    compositionStrategy: _.clone(defaultMixinStrategy)
+    compositionStrategy: defaultMixinStrategy
   })
   
   _.extend(child, base);
