@@ -35,7 +35,7 @@
     "sinon-chai": "^2.5.0"
   },
   "dependencies": {
-    "cobble": "~1.1.2",
+    "cobble": "^1.1.3",
     "lodash": "^2.4.1"
   }
 }
