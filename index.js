@@ -16,10 +16,8 @@ function getClass(){
 
     initProps = null
 
-    if ( props && props.length ) {
+    if ( props && props.length )
       cobble.into(this, props, defaultMixinStrategy)
-      //cobble.assert(this)
-    }
   }
 
   Class.prototype._super = _super
@@ -91,9 +89,4 @@ ClankObject.create = function(){
 
 module.exports = {
   Object: ClankObject
-}
-
-function removeInPlace(array, item){
-  var idx = array.indexOf(item)
-  if ( idx !== -1) array.splice(idx, 1)
 }

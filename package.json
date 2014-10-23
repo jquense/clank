@@ -1,6 +1,6 @@
 {
   "name": "clank",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "lightweight inheritance and compositional object model; mostly just helpers",
   "main": "index.js",
   "scripts": {
@@ -35,7 +35,7 @@
     "sinon-chai": "^2.5.0"
   },
   "dependencies": {
-    "cobble": "^1.1.3",
+    "cobble": "^2.0.1",
     "lodash": "^2.4.1"
   }
 }

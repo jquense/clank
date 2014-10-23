@@ -1,7 +1,8 @@
 Clank
 ========
 
-A simple prototypal inheritance abstraction with an emphasis on composition. Clank is a _thin_ wrapper around [cobble](https://github.com/theporchrat/cobble/) and works best with it. If you used Backbone or Ember this API should feel familiar, there is no magic here, just a few wrappers around the normal prototypal inheritance. Ultimately the goal would be to depreciate Clank when es6 classes are supported and just use them with `cobble`.
+A simple prototypal inheritance abstraction with an emphasis on composition. Clank adds some OO inheritance  around [cobble](https://github.com/theporchrat/cobble/) and works best with it. If you used Backbone or Ember this API should feel familiar, there is no magic here, just a few wrappers around the normal prototypal inheritance. Ultimately the goal would be to depreciate Clank when es6 classes are supported and just use them 
+with `cobble`.
 
 It is _highly_ recommended that you take a look at the [tests (`./test/class.js`)](https://github.com/theporchrat/clank/blob/master/test/class.js) for a far more extensive demostration of the functionality of Clank.
 
