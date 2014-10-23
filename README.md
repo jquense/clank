@@ -1,7 +1,7 @@
 Clank
 ========
 
-A simple prototypal inheritance abstraction with an emphasis on composition. Clank is a _thin_ wrapper around [cobble](https://github.com/theporchrat/cobble/). If you used Backbone or Ember this API should feel familiar, there is no magic here, just a few wrappers around the normal prototypal inheritance you are used to.
+A simple prototypal inheritance abstraction with an emphasis on composition. Clank is a _thin_ wrapper around [cobble](https://github.com/theporchrat/cobble/) and works best with it. If you used Backbone or Ember this API should feel familiar, there is no magic here, just a few wrappers around the normal prototypal inheritance. Ultimately the goal would be to depreciate Clank when es6 classes are supported and just use them with `cobble`.
 
 It is _highly_ recommended that you take a look at the [tests (`./test/class.js`)](https://github.com/theporchrat/clank/blob/master/test/class.js) for a far more extensive demostration of the functionality of Clank.
 
@@ -9,17 +9,13 @@ It is _highly_ recommended that you take a look at the [tests (`./test/class.js`
 
 Works fine in IE8 but does expect certain es5 functions, include es5 shim and sham in IE8 and everything will work fine, with a single caveat: object constructors are assigned a non-enumerable property `__META__`, which in IE8 _is_ enumerable, so keep that in mind, when using `Object.assign` and other "extend" functions.
 
-## 2.0.0 Breaking changes
-
-- instantiating an object will throw a `TypeError` if there are still unresolved required properties
-
 ## API
 
 require the module; 
 
-    var Clank = require('clank')
+    var ClankObject = require('clank').Object
 
-The Clank object [is just the cobble function](https://github.com/theporchrat/cobble/#cobbleobjects) with a single new property `.Object` which is your base object.
+The Clank module is an object that exports a single property `.Object`.
 
 ## Clank.Object
 
@@ -41,7 +37,7 @@ You can also pass in multiple spec objects and make use of Clanks, underlying us
     var doc = new DocOct()
     doc.limbs // => 8
 
-This effectively means taht you can specify mixin objects before your prototype spec.
+This effectively means that you can specify mixin objects before your prototype spec.
 
 You can also use cobble's descriptors to handle overrides and super calls. __See the cobble documentation for more information on descriptors__
 
@@ -51,7 +47,7 @@ You can also use cobble's descriptors to handle overrides and super calls. __See
     var germanGreeting  = { greet: function(){ return "guten morgen" } }
 
     var GermanSpanishAmerican = EnglishSpeaker.extend(spanishGreeting, germanGreeting, { 
-          greet: Clank.reduce(function (target, next) {
+          greet: cobble.reduce(function (target, next) {
             return function(){
               return target.call(this) + " and " + next.call(this)
             }
@@ -78,7 +74,7 @@ You can also use cobble's descriptors to handle overrides and super calls. __See
     var Toaster = Machine.extend({ 
     
           // call the super Toaster constructor after the Toaster constructor using a Descriptor
-          constructor: Clank.before(function(){
+          constructor: cobble.before(function(){
             this.greeting = 'whorl'
           })
         })
@@ -130,7 +126,7 @@ In certain cases you may want to create an object Class with a default compositi
 
     // in the future traits will be concated together
     Person.setCompositionStrategy({
-      traits: Clank.concat()
+      traits: cobble.concat()
     })
 
     var Hero  = Person.extend({ traits: [ 'brave' ] }) //no need to manually resolve this conflict
@@ -152,7 +148,7 @@ By default the descriptors, such as `before()` and `after()`, include super meth
         }) 
 
     var Pirate = Person.extend({ 
-          greet: Clank.compose(function(greeting){
+          greet: cobble.compose(function(greeting){
             return  "ARRRRRRG and " + greeting 
           })
         })

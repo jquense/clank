@@ -18,17 +18,17 @@ function getClass(){
 
     if ( props && props.length ) {
       cobble.into(this, props, defaultMixinStrategy)
-      cobble.assert(this)
+      //cobble.assert(this)
     }
   }
 
   Class.prototype._super = _super
 
-  Class._initProperties = function(args) { 
-    initProps = args; 
+  Class._initProperties = function(args) {
+    initProps = args;
   };
 
-  Class.setCompositionStrategy = function(strategy) { 
+  Class.setCompositionStrategy = function(strategy) {
     meta.get(this).compositionStrategy = strategy
   };
 
@@ -42,9 +42,9 @@ ClankObject.extend = function(){
     , base  = this
     , proto = Object.create(base.prototype)
     , defaultMixinStrategy = meta.get(this).compositionStrategy || {}
-    , child; 
+    , child;
 
-  for(var i = 0; i < len; ++i) 
+  for(var i = 0; i < len; ++i)
     args[i] = arguments[i];
 
   cobble.into(proto, args, defaultMixinStrategy)
@@ -56,11 +56,11 @@ ClankObject.extend = function(){
   child.prototype = proto
   child.prototype.constructor = child
 
-  meta.set(child, { 
+  meta.set(child, {
     superclass:    base,
     compositionStrategy: defaultMixinStrategy
   })
-  
+
   _.extend(child, base);
 
   return child
@@ -71,26 +71,27 @@ ClankObject.reopen = function(){
     , args = new Array(len)
     , defaultMixinStrategy = meta.get(this).compositionStrategy || {};
 
-  for(var i = 0; i < len; ++i) 
+  for(var i = 0; i < len; ++i)
     args[i] = arguments[i];
 
   cobble.into(this.prototype, args, defaultMixinStrategy)
 }
 
 ClankObject.create = function(){
-  var len  = arguments.length
-    , args = new Array(len);
+  var len   = arguments.length
+    , Klass = this
+    , args  = new Array(len);
 
-  for(var i = 0; i < len; ++i) 
+  for(var i = 0; i < len; ++i)
     args[i] = arguments[i];
 
   this._initProperties(args)
-  return new this
+  return new Klass
 }
 
-cobble.Object = ClankObject
-
-module.exports = cobble
+module.exports = {
+  Object: ClankObject
+}
 
 function removeInPlace(array, item){
   var idx = array.indexOf(item)

@@ -1,8 +1,10 @@
+/*global it, describe*/
 var chai  = require('chai')
   , sinon = require("sinon")
   , sinonChai = require("sinon-chai")
   , _      = require('lodash')
-  , Clank = require('../index');
+  , Clank = require('../index')
+  , cobble = require('cobble');
 
 chai.use(sinonChai);
 chai.should();
@@ -12,7 +14,7 @@ describe( "when creating objects", function(){
 
   it( 'should initialize with provided init props', function(){
     var Person = Clank.Object.extend({ greeting: 'guten tag' })
-      , Man    = Person.extend({}); 
+      , Man    = Person.extend({});
 
     var me  = Man.create({ greeting: 'hello'})
       , guy = Man.create()
@@ -26,7 +28,7 @@ describe( "when creating objects", function(){
 
   it( 'should initialize with provided array of init props', function(){
     var Person = Clank.Object.extend({ greeting: 'guten tag' })
-      , Man    = Person.extend({}); 
+      , Man    = Person.extend({});
 
     var me  = Man.create({ greeting: 'hello'}, { greet: function(){ return this.greeting }})
 
@@ -38,26 +40,26 @@ describe( "when creating objects", function(){
   })
 
   it( 'should throw when there are unmet required properties', function(){
-    var Person = Clank.Object.extend({ greeting: Clank.required })
-      , Man    = Person.extend({}); 
+    var Person = Clank.Object.extend({ greeting: cobble.required })
+      , Man    = Person.extend({});
 
     Man.reopen({ another: 'hello' })
 
-    ;(function(){ 
-      Man.create({ greeting: 'hello' }) }).should.not.throw()
+    ;(function(){
+      cobble.assert(Man.create({ greeting: 'hello' })) }).should.not.throw()
 
-    ;(function(){ 
-      Man.create({ salutation: 'hello' }) }).should.throw(TypeError, 'Unmet required properties: greeting')
+    ;(function(){
+      cobble.assert(Man.create({ salutation: 'hello' })) }).should.throw(TypeError, 'Unmet required properties: greeting')
   })
 
   it( 'should be able to provide a constructor', function(){
     var spy
       , Person = Clank.Object.extend({ greeting: 'guten tag' })
-      , Man = Person.extend({ 
+      , Man = Person.extend({
           constructor: spy = sinon.spy(function(){
             Person.call(this)
           })
-        }); 
+        });
 
     var me  = Man.create()
     spy.should.have.been.calledOnce
@@ -65,11 +67,11 @@ describe( "when creating objects", function(){
 
   it( 'should compose init props', function(){
     var Person = Clank.Object.extend({ greeting: function(){ return 'guten morgen' } })
-      , Man    = Person.extend({}); 
+      , Man    = Person.extend({});
 
     var me  = Man.create(
         { greeting: function(){ return ', hello' }}
-      , { greeting: Clank.compose(function(greeting){ 
+      , { greeting: cobble.compose(function(greeting){
             return this._super('greeting')() + greeting + ' and good Day'
           })
     })
@@ -81,8 +83,8 @@ describe( "when creating objects", function(){
   it( 'should compose respect mixin strategy for init props', function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
-    Person.setCompositionStrategy({ 
-      traits: Clank.concat()
+    Person.setCompositionStrategy({
+      traits: cobble.concat()
     })
 
     var Hero  = Person.extend({})
@@ -134,7 +136,7 @@ describe( "when extending objects", function(){
 
     man.should.have.a.property('gender').that.equals('male')
     man.should.not.have.a.property('limbs')
-    
+
     Man.reopen({
       limbs: 4,
       gender: 'irrelevant'
@@ -160,8 +162,8 @@ describe( "when extending objects", function(){
       , spanish = { greet: function(){ return "hola" } }
       , german  = { greet: function(){ return "guten morgen" } }
 
-      , GermanSpanishAmerican = Person.extend(spanish, german, { 
-          greet: Clank.reduce(functionalConcat) 
+      , GermanSpanishAmerican = Person.extend(spanish, german, {
+          greet: cobble.reduce(functionalConcat)
         });
 
     var man = new GermanSpanishAmerican()
@@ -180,7 +182,7 @@ describe( "when extending objects", function(){
     var Person = Clank.Object.extend({ traits: [ 'biped', 'hair'] });
 
     Person.setCompositionStrategy({
-      traits: Clank.concat()
+      traits: cobble.concat()
     })
 
     var Hero  = Person.extend({ traits: [ 'brave' ] })
@@ -202,9 +204,9 @@ describe( "when extending objects", function(){
 describe( 'when using super', function(){
 
   it( 'should call the parent class method', function(){
-    var Person = Clank.Object.extend({ greet: function(prefix){ 
+    var Person = Clank.Object.extend({ greet: function(prefix){
           return prefix + " and good day" } })
-      , Jason = Person.extend({ greet: function(prefix ){ 
+      , Jason = Person.extend({ greet: function(prefix ){
           return prefix + this._super('greet')(" and hello")
         }});
 
@@ -214,11 +216,11 @@ describe( 'when using super', function(){
   })
 
   it( 'should call the parent and grandparent without recursion', function(){
-    var Person = Clank.Object.extend({ greet: function(prefix){ 
+    var Person = Clank.Object.extend({ greet: function(prefix){
           return prefix + " and good day" } })
-      , Man = Person.extend({ greet: function(prefix){ 
+      , Man = Person.extend({ greet: function(prefix){
           return prefix + this._super('greet')(" and excellent weather") } })
-      , Jason = Man.extend({ greet: function(prefix ){ 
+      , Jason = Man.extend({ greet: function(prefix ){
           return prefix + this._super('greet')(" and hello")
         }});
 
@@ -228,13 +230,13 @@ describe( 'when using super', function(){
   })
 
   it( 'should call down the stack correctly when skipping a generation', function(){
-    var Person = Clank.Object.extend({ 
-          greet: function(prefix){ 
-            return prefix + " and good day" 
-          }   
+    var Person = Clank.Object.extend({
+          greet: function(prefix){
+            return prefix + " and good day"
+          }
         })
       , Man   = Person.extend({})
-      , Jason = Man.extend({ greet: function(prefix ){ 
+      , Jason = Man.extend({ greet: function(prefix ){
           return prefix + this._super('greet')(" and hello")
         }});
 
@@ -244,32 +246,32 @@ describe( 'when using super', function(){
   })
 
   it( 'should call down the stack correctly when called twice in a method', function(){
-    var Person = Clank.Object.extend({ greet: function(prefix){ 
+    var Person = Clank.Object.extend({ greet: function(prefix){
           return prefix + " and good day" } })
-      , Man = Person.extend({ greet: function(prefix){ 
+      , Man = Person.extend({ greet: function(prefix){
             var sup = this._super('greet')
             return prefix + sup(" and excellent weather") + sup(" repeat:")
-          } 
+          }
         })
-      , Jason = Man.extend({ greet: function(prefix ){ 
+      , Jason = Man.extend({ greet: function(prefix ){
           return prefix + this._super('greet')(" and hello")
         }});
 
     var me = new Jason()
 
     me.greet('hi').should.equal('hi and hello and excellent weather and good day repeat: and good day')
-   
+
   })
 
   it( 'should work when the method escapes the stack', function(){
-    var Person = Clank.Object.extend({ greet: function(prefix){ 
+    var Person = Clank.Object.extend({ greet: function(prefix){
           return prefix + " and good day" } })
-      , Man = Person.extend({ greet: function(prefix){ 
+      , Man = Person.extend({ greet: function(prefix){
             var sup = this._super('greet')
             return sup
-          } 
+          }
         })
-      , Jason = Man.extend({ greet: function(prefix ){ 
+      , Jason = Man.extend({ greet: function(prefix ){
           return this._super('greet')
         }});
 
@@ -281,24 +283,24 @@ describe( 'when using super', function(){
   })
 
   it( 'should work when calls are nested', function(){
-    var Person = Clank.Object.extend({ 
-          greet: function(prefix){ 
-            return prefix + " 3" 
-          } 
+    var Person = Clank.Object.extend({
+          greet: function(prefix){
+            return prefix + " 3"
+          }
         })
       , Man = Person.extend(
-        Clank({
-          greet: function(prefix ){ 
+        cobble({
+          greet: function(prefix ){
             return prefix + " 2a"
           }
         },
-        { 
-          greet: Clank.compose(function(prefix ){ 
+        {
+          greet: cobble.compose(function(prefix ){
             return this._super('greet')(prefix + " 2b")
           })
         }))
-      , Jason = Man.extend({ 
-          greet: function(prefix ){ 
+      , Jason = Man.extend({
+          greet: function(prefix ){
             return this._super('greet')(prefix + " 1")
           }
         });
@@ -311,13 +313,13 @@ describe( 'when using super', function(){
   })
 
   it( 'should throw when called outside a method', function(){
-    var Person = Clank.Object.extend({ 
-          greet: function(prefix){ 
-            return prefix + " and good day" 
-          } 
+    var Person = Clank.Object.extend({
+          greet: function(prefix){
+            return prefix + " and good day"
+          }
         })
-      , Jason = Person.extend({ 
-          greet: function(prefix ){ 
+      , Jason = Person.extend({
+          greet: function(prefix ){
             return prefix + this._super('greet')(" and hello")
           }
         });
@@ -334,44 +336,44 @@ describe( 'when using super', function(){
   /**
    * this is a good example of the perils of this approach, async stuff is going to mess up
    * super's ability to keep track of where it is in the chain, so the super must be gotten outside the timeout.
-   * subtle stuff like this is the reason super is underscored 
-   */   
+   * subtle stuff like this is the reason super is underscored
+   */
   it( 'should sort of work in a timeout', function(done){
-    
-    var obj = { value: 0 } 
 
-    var Human = Clank.Object.extend({ 
-          greet: function(prefix, cb){ 
+    var obj = { value: 0 }
+
+    var Human = Clank.Object.extend({
+          greet: function(prefix, cb){
             setTimeout(function(){
               cb(prefix + " Forth")
             }, 0)
-          } 
+          }
         })
 
-    var Person = Human.extend({ 
-          greet: function(prefix, cb){ 
+    var Person = Human.extend({
+          greet: function(prefix, cb){
             var self = this
               , sup = self._super('greet');
 
             setTimeout(function(){
               sup(prefix + " Third", cb)
             }, 0)
-          } 
+          }
         })
 
-    var Man = Person.extend({ 
-          greet: function(prefix, cb){ 
+    var Man = Person.extend({
+          greet: function(prefix, cb){
             var self = this
               , sup = self._super('greet');
 
             setTimeout(function(){
               sup(prefix + " Second", cb)
             }, 0)
-          } 
+          }
         })
 
-    var Jason = Man.extend({ 
-          greet: function(prefix, cb ){ 
+    var Jason = Man.extend({
+          greet: function(prefix, cb ){
             var self = this
               , sup = self._super('greet');
 
@@ -382,7 +384,7 @@ describe( 'when using super', function(){
         });
 
     var me = new Jason()
-    
+
     me.greet("start", function(result){
       //console.log(result)
       result.should.equal('start First Second Third Forth')
