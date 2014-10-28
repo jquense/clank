@@ -1,6 +1,6 @@
 {
   "name": "clank",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "lightweight inheritance and compositional object model; mostly just helpers",
   "main": "index.js",
   "scripts": {
@@ -30,12 +30,12 @@
     "gulp": "^3.8.7",
     "gulp-mocha": "^1.0.0",
     "gulp-plumber": "^0.6.5",
+    "lodash": "^2.4.1",
     "mocha": "^1.21.4",
     "sinon": "^1.10.3",
     "sinon-chai": "^2.5.0"
   },
   "dependencies": {
-    "cobble": "^2.0.1",
-    "lodash": "^2.4.1"
+    "cobble": "2.0.2"
   }
 }

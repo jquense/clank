@@ -1,6 +1,5 @@
 "use strict";
-var _ = require('lodash')
-  , cobble = require('cobble')
+var cobble = require('cobble')
   , meta   = require('./lib/meta')
   , apply  = require('cobble/lib/apply')
   , _super = require('./lib/super');
@@ -47,7 +46,7 @@ ClankObject.extend = function(){
 
   cobble.into(proto, args, defaultMixinStrategy)
 
-  child = proto && _.has(proto, 'constructor')
+  child = proto && has(proto, 'constructor')
         ? proto.constructor
         : function DefaultConstructor(){ return apply(base, this, arguments) }
 
@@ -59,7 +58,7 @@ ClankObject.extend = function(){
     compositionStrategy: defaultMixinStrategy
   })
 
-  _.extend(child, base);
+  extend(child, base);
 
   return child
 }
@@ -77,8 +76,8 @@ ClankObject.reopen = function(){
 
 ClankObject.create = function(){
   var len   = arguments.length
-    , Klass = this
-    , args  = new Array(len);
+    , args  = new Array(len)
+    , Klass = this;
 
   for(var i = 0; i < len; ++i)
     args[i] = arguments[i];
@@ -88,5 +87,15 @@ ClankObject.create = function(){
 }
 
 module.exports = {
-  Object: ClankObject
+  Object: ClankObject,
+  required: cobble.required
+}
+
+function extend(a, b){
+  for(var key in b) if(has(b, key))
+    a[key] = b[key]
+}
+
+function has(a, k) {
+  return Object.prototype.hasOwnProperty.call(a, k)
 }
